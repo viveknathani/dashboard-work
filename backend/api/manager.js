@@ -72,7 +72,8 @@ module.exports = function(app) {
      */
     app.put('/manager/task', async (req, res) => {
         try {
-            await Task.updateOne({ _id: req.body.upObject._id }, { $set : req.body.upObject });
+            const { deadline, status, points, by, to, problem, solution } = req.body;
+            await Task.updateOne({ _id: req.body._id }, { $set : { deadline, status, points, by, to, problem, solution } });
             res.status(201).send('Updated!');
         }
         catch(err) {
