@@ -7,13 +7,26 @@ const Task = require('../models/Task');
 
 module.exports = function(app) {
     /**
-     * Get all tasks assigned to a worker.
+     * Get tasks (paginated) assigned to a worker.
      */
-    app.get('/worker/tasks/:email', async (req, res) => {
+    app.get('/worker/tasks/:email/:page/:limit', async (req, res) => {
         try {
             let tasks;
+            let page = req.params.page;
+            let limit = req.params.limit;
             await Task.find({to: req.params.email})
-                      .then(docs => tasks = JSON.stringify(docs))
+                      .then(docs => {
+                          if(page <= 0) {
+                              page = 1;
+                          }
+                          if(limit <= 0) {
+                              limit = docs.length;
+                          }
+                          let start = (page - 1) * limit;
+                          let end = page * limit;
+                          docs = docs.slice(start, end);
+                          tasks = JSON.stringify(docs);
+                        })
                       .catch(err => console.log(err));
             res.send(tasks);
         }
