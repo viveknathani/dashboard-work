@@ -9,6 +9,16 @@ function getSolution(str) {
     return str;
 }
 
+function getStatus(number) {
+    if(number === 0) {
+        return "pending";
+    }
+    if(number === 1) {
+        return "done";
+    }
+    return "approved";
+}
+
 class Manager extends React.Component {
     constructor(props) {
         super(props);
@@ -17,11 +27,17 @@ class Manager extends React.Component {
         this.editTask = this.editTask.bind(this);
         this.filter = this.filter.bind(this);
         this.rateTask = this.rateTask.bind(this);
+        this.approveTask = this.approveTask.bind(this);
         this.state = {
             workers: [],
             tasks: [],
             filteredTasks: []
         }
+    }
+
+    logout() {
+        localStorage.clear();
+        window.location.reload();
     }
 
     async editTask() {
@@ -36,20 +52,41 @@ class Manager extends React.Component {
         upObject.problem = problem;
         upObject.deadline = date;
 
-        upObject = JSON.stringify(upObject);
-
-        let response = await fetch('http://localhost:4000/manager/task', {
+        let response = await fetch('/manager/task', {
             method: 'PUT',
             headers: commonHeaders,
-            body: {
-                upObject
-            }
+            body: JSON.stringify(upObject)
         });
+        window.location.reload();
+    }
+
+    async approveTask() {
+        let index = parseInt(document.getElementById("approve_index").value);
+        let upObject = this.state.tasks[index];
+        upObject.status = 2;
+        upObject = JSON.stringify(upObject);
+        let response = await fetch('/manager/task', {
+            method: 'PUT',
+            headers: commonHeaders,
+            body: upObject
+        });
+        window.location.reload();
     }
 
     async rateTask() {
         let index = parseInt(document.getElementById("rate_index").value);
+
+        if(this.state.tasks[index].status !== 2) {
+            alert("Task is not approved!");
+            return;
+        }
+
         let points = parseInt(document.getElementById("rate_point").value);
+
+        if(!(points >= 1 && points <= 500)) {
+            alert("points range: 1-500");
+            return;
+        }
         
         let objectToSend = this.state.tasks[index];
         objectToSend.points = points;
@@ -61,6 +98,7 @@ class Manager extends React.Component {
             headers: commonHeaders,
             body: objectToSend
         });
+        window.location.reload();
     }
 
     filter() {
@@ -148,7 +186,7 @@ class Manager extends React.Component {
         return(
             <div>
                 <h1>Manager dashboard</h1>
-
+                <button type="submit" onClick={this.logout}>logout</button>
                 <h3>Your workers</h3>
                 {this.state.workers.map((datum, index) => (
                                     <p>{datum.name} &nbsp; {datum.email}</p>
@@ -166,14 +204,13 @@ class Manager extends React.Component {
 
                 <h3>Tasks given by you</h3>
                 {this.state.tasks.map((datum, index) => (
-                    // status: (0/1/2) (assign/pending/done)
                     <div>
                         <hr></hr>
                         <p key={index}>Task index: {index}</p>
                         <p key={index}>Assigned To: {datum.to}</p>
                         <p key={index}>Deadline: {datum.deadline}</p>
                         <p key={index}>Problem statement: {datum.problem}</p>
-                        <p key={index}>Status: {datum.status}</p> 
+                        <p key={index}>Status: {getStatus(datum.status)}</p> 
                         <p key={index}>Solution: {getSolution(datum.solution)}</p>
                         <p key={index}>Points: {datum.points}</p>
                         <hr></hr>
@@ -187,14 +224,13 @@ class Manager extends React.Component {
                 <input type="date" id="filter_end"></input>
                 <button type="submit" onClick={this.filter}>filter</button>
                 {this.state.filteredTasks.map((datum, index) => (
-                    // status: (0/1/2) (assign/pending/done)
                     <div>
                         <hr></hr>
                         <p key={index}>Task index: {index}</p>
                         <p key={index}>Assigned To: {datum.to}</p>
                         <p key={index}>Deadline: {datum.deadline}</p>
                         <p key={index}>Problem statement: {datum.problem}</p>
-                        <p key={index}>Status: {datum.status}</p> 
+                        <p key={index}>Status: {getStatus(datum.status)}</p> 
                         <p key={index}>Solution: {datum.solution}</p>
                         <p key={index}>Points: {datum.points}</p>
                         <hr></hr>
@@ -212,6 +248,10 @@ class Manager extends React.Component {
                 <input placeholder="email of worker" id="edit_worker_email"></input>
                 <button type="submit" onClick={this.editTask}>edit</button>
 
+                <h3>Approve tasks</h3>
+                <label>Task index</label>
+                <input id="approve_index" type="number"></input>
+                <button type="submit" onClick={this.approveTask}>approve</button>
 
                 <h3>Rate tasks</h3>
                 <label>Task index</label>
@@ -219,6 +259,7 @@ class Manager extends React.Component {
                 <label>Points</label>
                 <input id="rate_point" type="number"></input>
                 <button type="submit" onClick={this.rateTask}>rate</button>
+
             </div>
         );
     }

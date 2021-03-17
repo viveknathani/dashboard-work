@@ -30,7 +30,7 @@ class Auth extends React.Component {
         let data = await response.json();
         localStorage.setItem("token", data.token);
         if(response.status === 201) {
-            document.getElementById("login_server_response").innerText = "Success!";
+            document.getElementById("login_server_response").innerText = "Success! You may login now.";
         }
         window.location.reload();
     }
@@ -70,6 +70,7 @@ class Auth extends React.Component {
                 <input id="who" name="who" type="radio" value={1}></input>
                 <input placeholder="email" id="signup_email"></input>
                 <input placeholder="password" type="password" id="signup_password"></input>
+                <p>Note for password: min 8 chars, atleast 1 number, atleast 1 letter.</p>
                 <p id="signup_server_response"></p>
                 <button id="submit" onClick={this.signup}>signup</button>
             </div>
