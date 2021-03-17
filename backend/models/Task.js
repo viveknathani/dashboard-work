@@ -12,7 +12,7 @@ const Task = mongoose.Schema({
     },
     status: {
         type: Number,
-        default: 0
+        default: 0              // 0:pending, 1:done, 2:approved
     }
 });
 
