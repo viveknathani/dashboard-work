@@ -116,7 +116,13 @@ module.exports = function(app) {
                 const isGood = await bcrypt.compare(password, passwordFromDB);
     
                 if(isGood) {
-                    const token = makeToken(userObject[0]._id, userObject[0].who, userObject[0].email, userObject[0].name);
+                    const data = {
+                        _id: userObject[0]._id,
+                        who: userObject[0].who,
+                        email: userObject[0].email,
+                        name: userObject[0].name
+                    }
+                    const token = makeToken(data);
                     res.status(200).send({ token });
                 }
                 else {
