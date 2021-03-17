@@ -19,7 +19,7 @@ module.exports = function(app) {
                           if(page <= 0) {
                               page = 1;
                           }
-                          if(limit <= 0) {
+                          if(limit <= 0 || limit > docs.length) {
                               limit = docs.length;
                           }
                           let start = (page - 1) * limit;
