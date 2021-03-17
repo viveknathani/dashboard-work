@@ -41,7 +41,7 @@ module.exports = function(app) {
                 problem: req.body.problem,
                 by: req.body.by,
                 to: req.body.to,
-                deadline: req.body.deadline
+                deadline: req.body.deadline,
             });
             await creator.save();
         }
