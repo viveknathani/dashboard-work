@@ -13,7 +13,8 @@ class App extends React.Component {
             _id: -1,
             isAuthenticated: false,
             who: -1,
-            email: 'nothing'
+            email: 'nothing',
+            name: 'nothing'
         }
     }
 
@@ -26,7 +27,7 @@ class App extends React.Component {
                 body: JSON.stringify({token})
             }).then((res) => res.json())
             .then((data) => {
-                this.setState({isAuthenticated: true, id: data.decoded.id, who: data.decoded.who, email: data.decoded.email});
+                this.setState({isAuthenticated: true, id: data.decoded.id, who: data.decoded.who, email: data.decoded.email, name: data.decoded.name});
             });
         }
     }
@@ -37,7 +38,7 @@ class App extends React.Component {
                 return (<Manager email={this.state.email}/>);
             }
             else {
-                return (<Worker/>);
+                return (<Worker email={this.state.email} name={this.state.name} _id={this.state._id}/>);
             }
         }
         else {
