@@ -20,9 +20,9 @@ class Auth extends React.Component {
     }
 
     async login() {
-        let email = document.getElementById("signup_email").value;
-        let password = document.getElementById("signup_password").value;
-        let response = await fetch('/signup', {
+        let email = document.getElementById("login_email").value;
+        let password = document.getElementById("login_password").value;
+        let response = await fetch('/login', {
             method: 'POST',
             headers: commonHeaders,
             body: JSON.stringify({email, password })
@@ -30,7 +30,7 @@ class Auth extends React.Component {
         let data = await response.json();
         localStorage.setItem("token", data.token);
         if(response.status === 201) {
-            document.getElementById("server_response").innerText = "Success!";
+            document.getElementById("login_server_response").innerText = "Success!";
         }
         window.location.reload();
     }
@@ -46,7 +46,7 @@ class Auth extends React.Component {
             body: JSON.stringify({email, password, who, name})
         });
         if(response.status === 201) {
-            document.getElementById("server_response").innerText = "Success!";
+            document.getElementById("signup_server_response").innerText = "Success!";
         }
     }
 
