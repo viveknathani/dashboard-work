@@ -2,6 +2,7 @@
 
 const databaseHandler = require('../models/setup');
 const authPaths = require('./auth');
+const managerPaths = require('./manager');
 
 module.exports = function(app) {
     databaseHandler.makeConnection();
@@ -11,4 +12,5 @@ module.exports = function(app) {
     });
 
     authPaths(app);
+    managerPaths(app);
 }

@@ -2,23 +2,30 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 
 module.exports = function(app) {
-    app.get('/manager/workers', (req, res) => {
+    app.get('/manager/workers', async (req, res) => {
         try {
-            let workers;
+            let workers = [];
             await User.find({ who: 1 })
-                      .then(docs => all = JSON.stringify(docs))
+                      .then(docs => {
+                          console.log(docs);
+                          for(let i = 0; i < docs.length; ++i) {
+                              workers.push({ name: docs[i].name, email: docs[i].email });
+                          }
+                          workers = JSON.stringify(workers);
+                      })
                       .catch(err => console.log(err));
-            res.send(all);
+            res.send(workers);
         }
         catch(err) {
             res.status(500).send({ message: err.message });
         }
     }); 
 
-    app.get('/manager/tasks', (req, res) => {
+    app.get('/manager/tasks/:email', async (req, res) => {
         try {
             let tasks;
-            await Task.find({by: req.body.email})
+            let email = req.params.email
+            await Task.find({by: email})
                       .then(docs => tasks = JSON.stringify(docs))
                       .catch(err => console.log(err));
             res.send(tasks);          
@@ -28,7 +35,7 @@ module.exports = function(app) {
         }
     });
 
-    app.post('/manager/task', (req, res) => {
+    app.post('/manager/task', async (req, res) => {
         try {
             let creator = new Task({ 
                 problem: req.body.problem,
@@ -43,7 +50,7 @@ module.exports = function(app) {
         }
     });
 
-    app.put('/manager/task', (req, res) => {
+    app.put('/manager/task', async (req, res) => {
         try {
             await Task.updateOne({ _id: req.body.upObject._id }, { $set : req.body.upObject });
             res.status(201).send('Updated!');
@@ -53,7 +60,7 @@ module.exports = function(app) {
         }
     });
 
-    app.delete('/manager/task', (req, res) => {
+    app.delete('/manager/task', async (req, res) => {
         try {
             const deleted = await Task.findByIdAndDelete(req.body._id);
             res.status(202).send({message: 'Deleted.' });

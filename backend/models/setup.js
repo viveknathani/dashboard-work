@@ -12,6 +12,7 @@ function makeConnection() {
             })
             .catch(err => {
                 console.log('Database connection error.');
+                console.log(err);
             });
 }
 

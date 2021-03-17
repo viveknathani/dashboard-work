@@ -1,15 +1,20 @@
 const bcrypt = require('bcrypt');
-const validResult = require('./valid');
+const validator = require('./valid');
 const jwt    = require('jsonwebtoken');
 const User = require('../models/User');
 const AGE    = 3 * 24 * 60 * 60;
 
-function makeToken(id) {
-    return jwt.sign({ id }, 
+function makeToken(id, who, email) {
+    return jwt.sign({ id, who, email }, 
                     process.env.JWT_SECRET, {
                         expiresIn: AGE
                     });
 }
+
+function wait(time) {
+    return new Promise(r => setTimeout(r, time));
+}
+
 
 module.exports = function(app) {
     app.post('/signup', async (req, res) => {
@@ -24,7 +29,7 @@ module.exports = function(app) {
                  return;
         }
 
-        User.exists({ email: email }, (err, res) => {
+        await User.exists({ email: email }, (err, res) => {
             if(err) {
                 console.log(err);
             }
@@ -57,34 +62,50 @@ module.exports = function(app) {
     app.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
-        User.exists({ email: email }, (err, res) => {
+        console.log(email, password);
+
+        let exists = true;
+        await User.find({ email: email }, (err, doc) => {
             if(err) {
                 console.log(err);
             }
-            if(res !== true) {
+            console.log(doc);
+            if(doc.length === 0) {
                 res.status(302).send({ 
                     message: 'User does not exist!'
                 });
+                console.log('Sent 302');
+                exists = false;
                 return;
             }
         });
 
-        try {
-            const userObject = await User.find({ email: email });
-            const passwordFromDB = userObject[0].password;
-            const isGood = await bcrypt.compare(password, passwordFromDB);
+        await wait(5);
 
-            if(isGood) {
-                const token = makeToken(userObject._id);
-                res.status(200).send({ token });
-
+        if(exists) {
+            try {
+                const userObject = await User.find({ email: email });
+                const passwordFromDB = userObject[0].password;
+                console.log('Password from DB: ', passwordFromDB);
+                const isGood = await bcrypt.compare(password, passwordFromDB);
+    
+                console.log(userObject);
+    
+                if(isGood) {
+                    const token = makeToken(userObject[0]._id, userObject[0].who, userObject[0].email);
+                    console.log(token);
+                    res.status(200).send({ token });
+                    console.log('Sent 200');
+                }
+                else {
+                    res.status(400).send({ message: 'Incorrect password!'});
+                    console.log('Sent 400');
+                }
             }
-            else {
-                res.status(400).send({ message: 'Incorrect password!'});
+            catch(err) {
+                res.status(500).send({ message: err.message });
+                console.log('Sent 500');
             }
-        }
-        catch(err) {
-            res.status(500).send({ message: err.message });
         }
     });
 
@@ -92,6 +113,7 @@ module.exports = function(app) {
         const { token } = req.body;
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log(decoded);
             res.status(200).send({decoded});
         }
         catch(err) {
