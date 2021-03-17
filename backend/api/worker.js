@@ -1,11 +1,18 @@
+/**
+ * Module for Worker role in our application.
+ */
+
 const User = require('../models/User');
 const Task = require('../models/Task');
 
 module.exports = function(app) {
-    app.get('/worker/tasks', (req, res) => {
+    /**
+     * Get all tasks assigned to a worker.
+     */
+    app.get('/worker/tasks/:email', async (req, res) => {
         try {
             let tasks;
-            await Task.find({by: req.body.email})
+            await Task.find({to: req.params.email})
                       .then(docs => tasks = JSON.stringify(docs))
                       .catch(err => console.log(err));
             res.send(tasks);
@@ -15,9 +22,12 @@ module.exports = function(app) {
         }
     });
 
-    app.put('/worker/submit', (req, res) => {
+    /**
+     * Submit a task.
+     */
+    app.put('/worker/submit', async (req, res) => {
         try {
-            await Task.updateOne({ _id: req.body._id }, { $set : { solution: req.body.solution } });
+            await Task.updateOne({ _id: req.body._id }, { $set : { solution: req.body.solution, status: 1 } });
             res.status(201).send('Updated!');
         }
         catch(err) {
@@ -25,9 +35,12 @@ module.exports = function(app) {
         }
     });
 
-    app.put('/worker/profile', (req, res) => {
+    /**
+     * Edit worker profile.
+     */
+    app.put('/worker/profile', async (req, res) => {
         try {
-            await Task.updateOne({ _id: req.body._id }, { $set : { name: req.body.name } });
+            await User.updateOne({ _id: req.body._id }, { $set : { name: req.body.name } });
             res.status(201).send('Updated!');
         }
         catch(err) {

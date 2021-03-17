@@ -1,13 +1,21 @@
+/**
+ * Module for manager role in our application.
+ */
+
 const User = require('../models/User');
 const Task = require('../models/Task');
 
+const WORKER = 1; // 0 indicates manager in the DB, 1 indicates worker.
+
 module.exports = function(app) {
+    /**
+     * Get list of all workers.
+     */
     app.get('/manager/workers', async (req, res) => {
         try {
             let workers = [];
-            await User.find({ who: 1 })
+            await User.find({ who: WORKER })
                       .then(docs => {
-                          console.log(docs);
                           for(let i = 0; i < docs.length; ++i) {
                               workers.push({ name: docs[i].name, email: docs[i].email });
                           }
@@ -21,6 +29,12 @@ module.exports = function(app) {
         }
     }); 
 
+    /**
+     * Get all tasks assigned by the manager.
+     * URL parameter is manager's email.
+     * Alternative solution would be to pass email into the request body but 
+     * fetch() [used on frontend] does not allow body content in GET requests.
+     */
     app.get('/manager/tasks/:email', async (req, res) => {
         try {
             let tasks;
@@ -35,6 +49,9 @@ module.exports = function(app) {
         }
     });
 
+    /**
+     * Post a task with the details.
+     */
     app.post('/manager/task', async (req, res) => {
         try {
             let creator = new Task({ 
@@ -50,6 +67,9 @@ module.exports = function(app) {
         }
     });
 
+    /**
+     * Edit/Update a task.
+     */
     app.put('/manager/task', async (req, res) => {
         try {
             await Task.updateOne({ _id: req.body.upObject._id }, { $set : req.body.upObject });
@@ -60,6 +80,9 @@ module.exports = function(app) {
         }
     });
 
+    /**
+     * Delete a task.
+     */
     app.delete('/manager/task', async (req, res) => {
         try {
             const deleted = await Task.findByIdAndDelete(req.body._id);
