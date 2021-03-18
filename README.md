@@ -14,7 +14,9 @@ These values could be named differently too. If you change the port value to som
 3. use dashboard # or any DB_NAME (should match with the one used in .env file)
 4. # exit from prompt
 5. cd backend # from project root
-6. npm start
-7. cd frontend # from project root
-8. npm start # will start at PORT 3000 by default
+6. npm install
+7. npm start
+8. cd frontend # from project root
+8. npm install
+9. npm start # will start at PORT 3000 by default
 ```
